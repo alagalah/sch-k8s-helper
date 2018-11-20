@@ -7,7 +7,7 @@ This is a quick start to get Control Hub running on GKE.
 You need to have the following:
 
 - Access to GKE with permissions to create a cluster (or use an existing cluster with admin privileges)
-- A valid domain name like "harki.stream"
+- A working DNS
 - A valid email service configuration like mailjet or sendgrid
 - A docker account that is associated with StreamSets (to access private docker image from dockerhub)
 
