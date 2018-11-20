@@ -11,6 +11,10 @@ You need to have the following:
 - A valid email service configuration like mailjet or sendgrid
 - A docker account that is associated with StreamSets (to access private docker image from dockerhub)
 
+## Configuration
+
+Modify values.yaml file to update the ingress.domain, ingress.hostname and email settings (DPM_CONF_MAIL_SMTP_HOST and related configs).
+
 ## How to spin up SCH on Kubernetes (GKE)
 Run the startup.sh script with the environment variables as shown below:
 
