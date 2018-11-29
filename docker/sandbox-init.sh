@@ -1,4 +1,4 @@
-#!/usr/bin/env bash
+#!/bin/sh
 #
 #  Copyright 2018 StreamSets Inc.
 #
@@ -6,6 +6,7 @@
 DPM_ADMIN_USER=${DPM_ADMIN_USER:-admin@admin}
 DPM_ADMIN_PASSWORD=${DPM_ADMIN_PASSWORD:-admin@admin}
 DPM_CONF_DPM_BASE_URL=${DPM_CONF_DPM_BASE_URL:-http://localhost:18631}
+SCRIPT_REPO=${SCRIPT_REPO:-https://raw.githubusercontent.com/alagalah/sch-k8s-helper/}
 
 # Wait until up and running
 
@@ -100,11 +101,17 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 echo ${SCRIPT_DIR}
 
+echo "Obtaining pipeline zip files."
+curl -Ls ${SCRIPT_REPO}/master/sdc.zip -o sdc.zip
+curl -Ls ${SCRIPT_REPO}/master/sdc.zip -o sdc.zip
+
+
 
 DPM_URL=${DPM_CONF_DPM_APP_PIPELINESTORE_URL:-${DPM_CONF_DPM_BASE_URL}}
 
 callHealthCheck
 
+echo "Adding pipelines via API"
 # Add pipeline
 callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommits" \
   "file=@${SCRIPT_DIR}/sdc.zip"
@@ -113,3 +120,5 @@ callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommit
 # Add pipeline
 callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommits" \
   "file=@${SCRIPT_DIR}/sdce.zip"
+
+echo "Done"
