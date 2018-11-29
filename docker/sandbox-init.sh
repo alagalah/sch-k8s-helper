@@ -1,12 +1,13 @@
-#!/bin/sh
+#!/usr/bin/env bash
 #
 #  Copyright 2018 StreamSets Inc.
 #
 
+set -x
+
 DPM_ADMIN_USER=${DPM_ADMIN_USER:-admin@admin}
 DPM_ADMIN_PASSWORD=${DPM_ADMIN_PASSWORD:-admin@admin}
 DPM_CONF_DPM_BASE_URL=${DPM_CONF_DPM_BASE_URL:-http://localhost:18631}
-SCRIPT_REPO=${SCRIPT_REPO:-https://raw.githubusercontent.com/alagalah/sch-k8s-helper/}
 
 # Wait until up and running
 
@@ -15,9 +16,11 @@ echo $DPM_URL
 
 callHealthCheck() {
   HEALTH_CHECK=`curl ${DPM_URL}/public-rest/v1/health`
+  HEALTH_CHECK=${HEALTH_CHECK:-dead}
   until [[ ${HEALTH_CHECK} =~ alive ]]; do
     sleep 5
     HEALTH_CHECK=`curl ${DPM_URL}/public-rest/v1/health`
+    HEALTH_CHECK=${HEALTH_CHECK:-dead}
   done
 }
 
@@ -84,7 +87,7 @@ callDPM "PUT" ${DPM_URL} "security/rest/v1/organizations" \
 
 # Add all roles to the new user added
 callDPM "POST" ${DPM_URL} "security/rest/v1/organization/sandbox/user/admin@sandbox" \
-  '{"id":"admin@sandbox","organization":"sandbox","name":"Sandbox Admin","email":"admin@sandbox.com","roles":["timeseries:reader","org-admin","timeseries:writer","datacollector:admin","jobrunner:operator","pipelinestore:pipelineEditor","topology:editor","sla:editor","provisioning:operator","user","notification:user","auth-token-admin","datacollector:guest","pipelinestore:user","scheduler:operator","sla:user","topology:user","reporting:operator","policy:manager","pipelinestore:rulesEditor","org-user","datacollector:manager","datacollector:creator","classification:admin"],"groups":["all@sandbox"],"active":true,"passwordExpiryTime":9942382589646,"creator":"admin@admin","createdOn":1537198348948,"lastModifiedBy":"admin@admin","lastModifiedOn":1537198348948,"destroyer":null,"deleteTime":0,"userDeleted":false,"nameInOrg":"admin@sandbox","passwordGenerated":false}'
+  '{"id":"admin@sandbox","organization":"sandbox","name":"Sandbox Admin","email":"admin@sandbox.com","roles":["timeseries:reader","org-admin","timeseries:writer","datacollector:admin","jobrunner:operator","pipelinestore:pipelineEditor","topology:editor","sla:editor","provisioning:operator","user","notification:user","auth-token-admin","datacollector:guest","pipelinestore:user","scheduler:operator","sla:user","topology:user","reporting:operator","policy:manager","pipelinestore:rulesEditor","org-user","datacollector:manager","datacollector:creator","classification:admin"],"groups":["all@sandbox"],"active":true,"passwordExpiryTime":1543382589646,"creator":"admin@admin","createdOn":1537198348948,"lastModifiedBy":"admin@admin","lastModifiedOn":1537198348948,"destroyer":null,"deleteTime":0,"userDeleted":false,"nameInOrg":"admin@sandbox","passwordGenerated":false}'
 
 DPM_TOKEN=`curl -X POST \
   -d "{\"userName\":\"admin@sandbox\", \"password\": \"admin@sandbox\"}" \
@@ -100,12 +103,6 @@ DPM_TOKEN=`curl -X POST \
 SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 
 echo ${SCRIPT_DIR}
-
-echo "Obtaining pipeline zip files."
-curl -Ls ${SCRIPT_REPO}/master/sdc.zip -o sdc.zip
-curl -Ls ${SCRIPT_REPO}/master/sdc.zip -o sdc.zip
-
-
 
 DPM_URL=${DPM_CONF_DPM_APP_PIPELINESTORE_URL:-${DPM_CONF_DPM_BASE_URL}}
 
