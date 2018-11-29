@@ -80,13 +80,13 @@ kubectl create configmap traefik-conf --from-file=traefik.toml
 kubectl create -f traefik-dep.yaml --namespace=${KUBE_NAMESPACE}
 
 # 4. Wait for an external endpoint to be assigned
-external_ip=""
-while [ -z $external_ip ]; do
-    sleep 10
-    external_ip=$(kubectl get svc traefik-ingress-service -o json | jq -r 'select(.status.loadBalancer.ingress != null) | .status.loadBalancer.ingress[].ip')
-done
-echo "External Endpoint to Access Authoring SDC : ${external_ip}\n"
-echo "Update your hostname.doman to point to : ${external_ip}\n"
+# external_ip=""
+# while [ -z $external_ip ]; do
+#     sleep 10
+#     external_ip=$(kubectl get svc traefik-ingress-service -o json | jq -r 'select(.status.loadBalancer.ingress != null) | .status.loadBalancer.ingress[].ip')
+# done
+# echo "External Endpoint to Access Authoring SDC : ${external_ip}\n"
+# echo "Update your hostname.doman to point to : ${external_ip}\n"
 
 #######################
 # Install Control Hub #
@@ -100,10 +100,6 @@ helm init --upgrade --wait
 helm repo add streamsets https://streamsets.github.io/helm-charts/
 helm repo update
 
-# Need to clone the helm-charts repo until we ship the charts
-git clone https://github.com/streamsets/helm-charts.git
-cd helm-charts/control-hub
-helm dependency update
 
 # Create secret to pull image from docker registry
 kubectl create secret docker-registry regcred \
@@ -111,7 +107,4 @@ kubectl create secret docker-registry regcred \
  --docker-username=${DOCKER_USERNAME} \
  --docker-password=${DOCKER_PASSWORD} \
  --docker-email=${DOCKER_EMAIL}
-
-# Install
-helm install -f ../../values.yaml . --debug --timeout 1200
 
