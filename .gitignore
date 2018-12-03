@@ -1,1 +1,3 @@
 .idea
+helm-charts
+istio-1.*
