@@ -3,7 +3,19 @@
 #  Copyright 2018 StreamSets Inc.
 #
 
-set -x
+DEBUG=${DEBUG:-0}
+
+function debug_echo {
+  if [ $DEBUG -ne 0 ]; then
+    echo "***SCH-K8S: $1"
+  fi
+}
+
+# If debug set, then show command as it executes
+if [ ${DEBUG} -ne 0 ]; then
+  set -x
+fi
+
 
 DPM_ADMIN_USER=${DPM_ADMIN_USER:-admin@admin}
 DPM_ADMIN_PASSWORD=${DPM_ADMIN_PASSWORD:-admin@admin}
@@ -12,19 +24,9 @@ DPM_CONF_DPM_BASE_URL=${DPM_CONF_DPM_BASE_URL:-http://localhost:18631}
 # Wait until up and running
 
 DPM_URL=${DPM_CONF_DPM_APP_SECURITY_URL:-${DPM_CONF_DPM_BASE_URL}}
-echo $DPM_URL
 
-callHealthCheck() {
-  HEALTH_CHECK=`curl ${DPM_URL}/public-rest/v1/health`
-  HEALTH_CHECK=${HEALTH_CHECK:-dead}
-  until [[ ${HEALTH_CHECK} =~ alive ]]; do
-    sleep 5
-    HEALTH_CHECK=`curl ${DPM_URL}/public-rest/v1/health`
-    HEALTH_CHECK=${HEALTH_CHECK:-dead}
-  done
-}
-
-callHealthCheck
+source ./healthcheck.sh
+callHealthCheck # sourced from healthcheck.sh
 
 # Following courtesy of Pasindhu's
 DPM_TOKEN=`curl --connect-timeout 900 -X POST \
@@ -52,6 +54,7 @@ callDPM() {
   REST=$5
   curl \
     -X $METHOD \
+    --silent \
     -H "X-SS-User-Auth-Token:$DPM_TOKEN" \
     -H 'Content-Type: application/json' \
     -H 'X-Requested-By: SCH UI' \
@@ -68,6 +71,7 @@ callDPM2() {
   REST=$5
   curl \
     -X $METHOD \
+    --silent \
     -H "X-SS-User-Auth-Token:$DPM_TOKEN" \
     -H 'Content-Type: multipart/form-data' \
     -H 'X-Requested-By: SCH UI' \
@@ -109,13 +113,13 @@ DPM_URL=${DPM_CONF_DPM_APP_PIPELINESTORE_URL:-${DPM_CONF_DPM_BASE_URL}}
 callHealthCheck
 
 echo "Adding pipelines via API"
-# Add pipeline
+# Add pipelines from ZIP
 callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommits" \
-  "file=@${SCRIPT_DIR}/sdc.zip"
+  "file=@${SCRIPT_DIR}/sdc.zip" > /dev/null 2>&1
 
 
-# Add pipeline
+# Add pipelines from ZIP
 callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommits" \
-  "file=@${SCRIPT_DIR}/sdce.zip"
+  "file=@${SCRIPT_DIR}/sdce.zip" > /dev/null 2>&1
 
-echo "Done"
+echo "Sandbox org created. Access via username:admin@sandbox password:admin@sandbox"

@@ -6,10 +6,29 @@
 # 31380 is minikube default for exposing app.
 
 DPM_HOSTNAME=streamsets.minikube.local
+DPM_URL=http://${DPM_HOSTNAME}:31380
+
+# test
+DPM_CONF_DPM_BASE_URL=${DPM_URL}
+. ./sandbox-init.sh
+exit 0
+# test
 
 echo "Handling base infrastructure"
-DPM_HOSTNAME=${DPM_HOSTNAME} ./infrastructure_setup.sh
+. ./infrastructure_setup.sh
 
-DPM_URL=http://${DPM_HOSTNAME}:31380
+
 echo "Installing Control Hub"
-DPM_URL=${DPM_URL} ./install_controlhub.sh
+. ./install_controlhub.sh
+
+echo "Waiting on healthcheck for control hub..."
+source ./healthcheck.sh
+callHealthCheck # sourced from healthcheck.sh
+
+echo "Healthy. Access via ${DPM_URL}"
+
+echo "Setting up sandbox org"
+
+DPM_CONF_DPM_BASE_URL=${DPM_URL}
+. ./sandbox-init.sh
+

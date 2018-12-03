@@ -20,7 +20,7 @@ KUBE_NAMESPACE=${KUBE_NAMESPACE:-default}
 SCH_VM_DRIVER=${SCH_VM_DRIVER:-hyperkit}
 KUBE_USERNAME=${KUBE_USERNAME:-minikube}
 SCH_VER=${SCH_VER:-3.7.0}
-DPM_HOSTNAME=${DPM_HOSTNAME:-streamset.minikube.local}
+DPM_HOSTNAME=${DPM_HOSTNAME:-keith.minikube.local}
 
 
 if [ -z "$DOCKER_USERNAME" ]; then
@@ -65,7 +65,7 @@ function debug_echo() {
 }
 
 function removehost() {
-    ETC_HOSTS=/Users/alagalah/hosts
+    ETC_HOSTS=/etc/hosts
     HOSTNAME=$1
     if [ -n "$(grep ${HOSTNAME} ${ETC_HOSTS})" ]
     then
@@ -77,7 +77,7 @@ function removehost() {
 }
 
 function addhost() {
-    ETC_HOSTS=/Users/alagalah/hosts
+    ETC_HOSTS=/etc/hosts
     HOSTNAME=$1
     IP=$2
     HOSTS_LINE="${IP}\t${HOSTNAME}"
@@ -185,16 +185,24 @@ kubectl create secret docker-registry regcred \
 #
 #######################################################################################
 
-cd <wherever you put istio from step above>/install/kubernetes/helm/
+function istio_install() {
+  cd ${SCRIPT_DIR}
+  git clone /git/work/streamsets/helm-charts/
+  cd install/kubernetes/helm/
+  kubectl create -f ./helm-service-account.yaml
+  helm init --service-account tiller --upgrade
+  helm install -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio
+  kubectl label namespace default istio-injection=enabled
+}
 
-kubectl create -f ./helm-service-account.yaml
+helm status istio > /dev/null 2>&1
+ISTIO_RC=$?
+if [ $ISTIO_RC -eq 0 ]; then
+  echo "Istio already installed, using installation."
+else
+  istio_install
+fi
 
-helm init \--service-account tiller \--upgrade
-
-helm install -n istio -f <helm-chart-controlhub-repo-path>/docs/control-hub/istio-values.yaml \
---namespace=istio-system ./istio
-
-kubectl label namespace default istio-injection=enabled
 
 ##############
 #
@@ -206,5 +214,14 @@ kubectl label namespace default istio-injection=enabled
 # TODO: Need better way of handling this, but for minikube on PC will suffice
 
 MINIKUBE_IP=$(minikube ip)
+
+removehost ${DPM_HOSTNAME}
+removehost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local"
+removehost "sch.${KUBE_NAMESPACE}.svc.cluster.local"
+
+addhost ${DPM_HOSTNAME} ${MINIKUBE_IP}
+addhost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
+addhost "sch.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
+
 
 

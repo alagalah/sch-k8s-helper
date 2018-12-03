@@ -35,9 +35,7 @@ git clone /git/work/streamsets/helm-charts
 cd helm-charts
 echo "Installing control-hub. Follow progress: "
 echo "watch -n1 -d \"kubectl get job,pod,svc\" "
-helm dependency update control-hub
-
-#> /dev/null 2>&1
-#helm install --timeout 600 --namespace ${KUBE_NAMESPACE} \
-#--name sch --values ${SCRIPT_DIR}/control-hub/sch-minikube.yaml control-hub --wait
+helm dependency update control-hub > /dev/null 2>&1
+helm install --timeout 600 --namespace ${KUBE_NAMESPACE} \
+--name sch --values ${SCRIPT_DIR}/control-hub/sch-minikube.yaml control-hub --wait
 
