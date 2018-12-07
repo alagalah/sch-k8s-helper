@@ -20,6 +20,7 @@ KUBE_USERNAME=${KUBE_USERNAME:-minikube}
 SCH_VER=${SCH_VER:-3.7.0}
 DPM_HOSTNAME=${DPM_HOSTNAME:-streamsets.minikube.local}
 DPM_URL=http://${DPM_HOSTNAME}:31380
+SCH_SANDBOX=${SCH_SANDBOX:-0}
 
 # Fun story, but internally to k8s, no one knows your local /etc/hosts or DNS. For this will map a
 # externalname (outside URL) to this service name, in effect resolving
@@ -52,12 +53,15 @@ callHealthCheck # sourced from util-healthcheck.sh
 echo "Healthy. Access via ${DPM_URL}"
 echo " took:" $((`date +%s`-TASK)) "s"
 
-echo "Setting up sandbox org"
-TASK=`date +%s`
-DPM_CONF_DPM_BASE_URL=${DPM_URL}
-. ./configure-sandbox.sh
-cd ${SCRIPT_DIR}
-echo " took:" $((`date +%s`-TASK)) "s"
+
+if [[ ${SCH_SANDBOX} -ne 0 ]]; then
+  echo "Setting up sandbox org"
+  TASK=`date +%s`
+  DPM_CONF_DPM_BASE_URL=${DPM_URL}
+  . ./configure-sandbox.sh
+  cd ${SCRIPT_DIR}
+  echo " took:" $((`date +%s`-TASK)) "s"
+fi
 
 echo "Script took:" $((`date +%s`-START)) "s"
 
