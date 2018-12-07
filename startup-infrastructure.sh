@@ -14,14 +14,6 @@ function show_usage() {
   echo '-----------------------------------------------------------------------'
 }
 
-# Optional params and their defaults
-DEBUG=${DEBUG:-0}
-KUBE_NAMESPACE=${KUBE_NAMESPACE:-default}
-SCH_VM_DRIVER=${SCH_VM_DRIVER:-hyperkit}
-KUBE_USERNAME=${KUBE_USERNAME:-minikube}
-SCH_VER=${SCH_VER:-3.7.0}
-DPM_HOSTNAME=${DPM_HOSTNAME:-keith.minikube.local}
-
 
 if [ -z "$DOCKER_USERNAME" ]; then
   show_usage
@@ -52,10 +44,7 @@ function validate_command() {
 }
 
 function start_minikube() {
-  echo "minikube start --vm-driver=hyperkit --memory=8192 --cpus=4 --extra-config=apiserver.authorization-mode=RBAC \
---extra-config=controller-manager.cluster-signing-cert-file=\"/var/lib/localkube/certs/ca.crt\" \
---extra-config=controller-manager.cluster-signing-key-file=\"/var/lib/localkube/certs/ca.key\" "
-  exit 1
+  minikube start --vm-driver=hyperkit --memory=8192 --cpus=4
 }
 
 function debug_echo() {
@@ -113,13 +102,14 @@ INSTALL_MINIKUBE="Please see instructions at: https://github.com/kubernetes/mini
 INSTALL_GIT="Please install git."
 INSTALL_ISTIO="Follow steps at https://istio.io/docs/setup/kubernetes/download-release/ to download."
 INSTALL_KUBECTL="Follow steps at https://kubernetes.io/docs/tasks/tools/install-kubectl/"
+INSTALL_JQ="Please install jq via appropriate installer for your platform."
 
 validate_command "minikube" $INSTALL_MINIKUBE
 validate_command $SCH_VM_DRIVER
 validate_command "helm" $INSTALL_HELM
 validate_command "git" $INSTALL_GIT
 validate_command "kubectl" $INSTALL_KUBECTL
-
+validate_command "jq" $INSTALL_JQ
 
 
 ##################
@@ -138,6 +128,8 @@ if [ ${RC_MINIKUBE} -ne 0 ]; then
   echo "Error: minikube is not running."
   start_minikube
 fi
+
+eval $(minikube docker-env)
 
 # SSH into minikube and execute commands
 ## Want promiscuous mode for traffic
@@ -187,11 +179,14 @@ kubectl create secret docker-registry regcred \
 
 function istio_install() {
   cd ${SCRIPT_DIR}
-  git clone /git/work/streamsets/helm-charts/
+  curl -L https://git.io/getLatestIstio | sh -
+  cd `find . -name "istio-1.*" -type d`
   cd install/kubernetes/helm/
   kubectl create -f ./helm-service-account.yaml
   helm init --service-account tiller --upgrade
+  sleep 5
   helm install -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio
+  sleep 10
   kubectl label namespace default istio-injection=enabled
 }
 
@@ -217,11 +212,11 @@ MINIKUBE_IP=$(minikube ip)
 
 removehost ${DPM_HOSTNAME}
 removehost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local"
-removehost "sch.${KUBE_NAMESPACE}.svc.cluster.local"
+removehost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local"
 
 addhost ${DPM_HOSTNAME} ${MINIKUBE_IP}
 addhost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
-addhost "sch.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
+addhost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
 
 
 
