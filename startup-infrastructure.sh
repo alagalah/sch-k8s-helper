@@ -38,13 +38,14 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 function validate_command() {
   if ! [ -x "$(command -v $1)" ]; then
     echo "Error: $1 is not installed." >&2
-    echo $2
+    shift
+    echo $@
     exit 1
   fi
 }
 
 function start_minikube() {
-  minikube start --vm-driver=hyperkit --memory=8192 --cpus=4
+  minikube start --vm-driver=${SCH_VM_DRIVER} --memory=8192 --cpus=4
 }
 
 function debug_echo() {
@@ -103,11 +104,12 @@ INSTALL_GIT="Please install git."
 INSTALL_ISTIO="Follow steps at https://istio.io/docs/setup/kubernetes/download-release/ to download."
 INSTALL_KUBECTL="Follow steps at https://kubernetes.io/docs/tasks/tools/install-kubectl/"
 INSTALL_JQ="Please install jq via appropriate installer for your platform."
+INSTALL_SCH_DRIVER="SCH_VM_DRIVER=${SCH_VM_DRIVER} is not known on this system. Please consult valid options for your system."
 
 validate_command "minikube" $INSTALL_MINIKUBE
-validate_command $SCH_VM_DRIVER
+[[ ${SCH_VM_DRIVER} -ne "none" ]] && validate_command $SCH_VM_DRIVER $INSTALL_SCH_DRIVER
 validate_command "helm" $INSTALL_HELM
-validate_command "git" $INSTALL_GIT
+validate_command "git" INSTALL_GIT
 validate_command "kubectl" $INSTALL_KUBECTL
 validate_command "jq" $INSTALL_JQ
 
