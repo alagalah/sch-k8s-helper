@@ -1,7 +1,7 @@
 ---
 image:
   repository: streamsets/control-hub
-  tag: DEV-3.8.0-SNAPSHOT
+  tag: 3.7.0
 ingress:
   enabled: false
   proto: http

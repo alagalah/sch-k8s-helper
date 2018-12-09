@@ -15,8 +15,12 @@ SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" >/dev/null && pwd )"
 # Optional params and their defaults
 DEBUG=${DEBUG:-0}
 KUBE_NAMESPACE=${KUBE_NAMESPACE:-default}
-SCH_VM_DRIVER=${SCH_VM_DRIVER:-hyperkit}
 KUBE_USERNAME=${KUBE_USERNAME:-minikube}
+
+SCH_VM_DRIVER=${SCH_VM_DRIVER:-hyperkit}
+SCH_VM_RAM=${SCH_VM_RAM:-8192}
+SCH_VM_CPUS=${SCH_VM_CPUS:-4}
+
 SCH_VER=${SCH_VER:-3.7.0}
 DPM_HOSTNAME=${DPM_HOSTNAME:-streamsets.minikube.local}
 DPM_URL=http://${DPM_HOSTNAME}:31380

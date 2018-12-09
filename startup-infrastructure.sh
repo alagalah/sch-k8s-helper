@@ -45,7 +45,8 @@ function validate_command() {
 }
 
 function start_minikube() {
-  minikube start --vm-driver=${SCH_VM_DRIVER} --memory=8192 --cpus=4
+  minikube start --vm-driver=${SCH_VM_DRIVER} --memory=${SCH_VM_RAM} --cpus=${SCH_VM_CPUS}
+  sleep 60 # Can't find a suitable and reliable "health check" for k8s itself etc.
 }
 
 function debug_echo() {
@@ -181,15 +182,15 @@ kubectl create secret docker-registry regcred \
 #######################################################################################
 
 function istio_install() {
+  echo "Installing Istio."
   cd ${SCRIPT_DIR}
-  curl -L https://git.io/getLatestIstio | sh -
+  curl -L https://git.io/getLatestIstio | sh - > /dev/null 2>&1
   cd `find . -name "istio-1.*" -type d`
   cd install/kubernetes/helm/
   kubectl create -f ./helm-service-account.yaml
   helm init --service-account tiller --upgrade
-  sleep 5
-  helm install -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio
-  sleep 10
+  sleep 20
+  helm install -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio --wait
   kubectl label namespace default istio-injection=enabled
 }
 
@@ -213,6 +214,7 @@ fi
 
 MINIKUBE_IP=$(minikube ip)
 
+echo "Adding host entries"
 removehost ${DPM_HOSTNAME}
 removehost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local"
 removehost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local"
