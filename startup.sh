@@ -61,7 +61,7 @@ debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 
 if [[ ${SCH_SANDBOX} -ne 0 ]]; then
-  echo "Setting up sandbox org"
+  echo "Setting up sandbox org - currently experimental"
   TASK=`date +%s`
   DPM_CONF_DPM_BASE_URL=${DPM_URL}
   . ./configure-sandbox.sh
