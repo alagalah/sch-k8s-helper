@@ -26,7 +26,7 @@ SCH_SANDBOX=${SCH_SANDBOX:-0}
 # externalname (outside URL) to this service name, in effect resolving
 # to an outside address that forces the SDC to come from the outside in to the cluster to access SCH.
 # ie svc: sch.default.svc.cluster.local -> maps outside -> streamsets.minikube.local -> maps /etc/hosts -> 192.168.64.8
-DPM_INTERNAL_URL="http://sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local:31380"
+DPM_INTERNAL_URL=${DPM_INTERNAL_URL:-"http://sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local:31380"}
 DPM_CONF_DPM_APP_PROVISIONING_URL=${DPM_CONF_DPM_APP_PROVISIONING_URL:-${DPM_INTERNAL_URL}}
 DPM_CONF_DPM_APP_SECURITY_URL=${DPM_CONF_DPM_APP_PROVISIONING_URL:-${DPM_INTERNAL_URL}}
 DPM_CONF_DPM_BASE_URL=${DPM_URL}
