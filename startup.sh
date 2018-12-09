@@ -37,21 +37,23 @@ echo "Handling base infrastructure"
 TASK=`date +%s`
 . ./startup-infrastructure.sh
 cd ${SCRIPT_DIR}
-echo " took:" $((`date +%s`-TASK)) "s"
+debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 echo "Installing Control Hub"
 TASK=`date +%s`
 . ./install_controlhub.sh
 cd ${SCRIPT_DIR}
-echo " took:" $((`date +%s`-TASK)) "s"
+debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 echo "Waiting on healthcheck for control hub..."
 TASK=`date +%s`
 source ./util-healthcheck.sh
 cd ${SCRIPT_DIR}
 callHealthCheck # sourced from util-healthcheck.sh
-echo "Healthy. Access via ${DPM_URL}"
-echo " took:" $((`date +%s`-TASK)) "s"
+echo "Healthy."
+echo "Access via ${DPM_URL}"
+echo ""
+debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 
 if [[ ${SCH_SANDBOX} -ne 0 ]]; then
@@ -60,7 +62,7 @@ if [[ ${SCH_SANDBOX} -ne 0 ]]; then
   DPM_CONF_DPM_BASE_URL=${DPM_URL}
   . ./configure-sandbox.sh
   cd ${SCRIPT_DIR}
-  echo " took:" $((`date +%s`-TASK)) "s"
+  debug_echo " took:" $((`date +%s`-TASK)) "s"
 fi
 
 echo "Script took:" $((`date +%s`-START)) "s"

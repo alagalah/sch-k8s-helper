@@ -22,11 +22,11 @@ cd ${SCRIPT_DIR}
 debug_echo "Installing Control Hub at ${SCRIPT_DIR}"\
 
 function install_control_hub() {
-  #git clone https://github.com/streamsets/helm-charts.git
   debug_echo "Pulling docker image for control hub"
   docker pull streamsets/control-hub:${SCH_VER}
   debug_echo "Cloning helm-charts"
-  git clone /git/work/streamsets/helm-charts
+  git clone https://github.com/streamsets/helm-charts.git
+  #git clone /git/work/streamsets/helm-charts
   cd helm-charts
   echo "Installing control-hub. Follow progress: "
   echo "watch -n1 -d \"kubectl get job,pod,svc -n ${KUBE_NAMESPACE}\" "
@@ -53,7 +53,7 @@ RC_HELM=$?
 if [ ${RC_HELM} -ne 0 ]; then
   install_control_hub
 else
-  echo "SCH already installed in this minikube instance. Try:"
+  echo "SCH already installed in this minikube instance. To remove:"
   echo ""
   echo "helm delete --purge sch"
   echo ""

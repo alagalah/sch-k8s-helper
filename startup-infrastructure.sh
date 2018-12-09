@@ -56,33 +56,34 @@ function debug_echo() {
 
 function removehost() {
     ETC_HOSTS=/etc/hosts
-    HOSTNAME=$1
-    if [ -n "$(grep ${HOSTNAME} ${ETC_HOSTS})" ]
+    ETC_HOSTNAME=$1
+    if [ -n "$(grep ${ETC_HOSTNAME} ${ETC_HOSTS})" ]
     then
-        echo "${HOSTNAME} Found in your ${ETC_HOSTS}, Removing now...";
-        sudo sed -i".bak" "/${HOSTNAME}/d" ${ETC_HOSTS}
+        debug_echo "${ETC_HOSTNAME} Found in your ${ETC_HOSTS}, Removing now...";
+        sudo sed -i".bak" "/${ETC_HOSTNAME}/d" ${ETC_HOSTS}
     else
-        echo "${HOSTNAME} was not found in your ${ETC_HOSTS}";
+        debug_echo "${ETC_HOSTNAME} was not found in your ${ETC_HOSTS}";
     fi
 }
 
 function addhost() {
     ETC_HOSTS=/etc/hosts
-    HOSTNAME=$1
+    ETC_HOSTNAME=$1
     IP=$2
-    HOSTS_LINE="${IP}\t${HOSTNAME}"
-    if [ -n "$(grep ${HOSTNAME} ${ETC_HOSTS})" ]
+    HOSTS_LINE="${IP}\t${ETC_HOSTNAME}"
+    if [ -n "$(grep ${ETC_HOSTNAME} ${ETC_HOSTS})" ]
         then
-            echo "${HOSTNAME} already exists : $(grep ${HOSTNAME} ${ETC_HOSTS})"
+            debug_echo "${ETC_HOSTNAME} already exists : $(grep ${ETC_HOSTNAME} ${ETC_HOSTS})"
         else
-            echo "Adding ${HOSTNAME} to your ${ETC_HOSTS}";
+            debug_echo "Adding ${ETC_HOSTNAME} to your ${ETC_HOSTS}";
             sudo -- sh -c -e "echo '${HOSTS_LINE}' >> ${ETC_HOSTS}";
 
-            if [ -n "$(grep ${HOSTNAME} ${ETC_HOSTS})" ]
+            if [ -n "$(grep ${ETC_HOSTNAME} ${ETC_HOSTS})" ]
                 then
-                    echo "$(HOSTNAME) was added succesfully \n $(grep ${HOSTNAME} ${ETC_HOSTS})";
+                    echo "Added to ${ETC_HOSTS}: $(grep ${ETC_HOSTNAME} ${ETC_HOSTS})"
                 else
-                    echo "Failed to Add $(HOSTNAME), Try again!";
+                    echo "Failed to Add ${ETC_HOSTNAME}, Exitting.";
+                    exit 1
             fi
     fi
 }
@@ -146,31 +147,31 @@ if [ -z "$ROUTE_EXISTS" ]; then
   exit 1
 fi
 
-kubectl create namespace ${KUBE_NAMESPACE}
-kubectl config set-context $(kubectl config current-context) --namespace=${KUBE_NAMESPACE}
+kubectl create namespace ${KUBE_NAMESPACE} > /dev/null 2>&1
+kubectl config set-context $(kubectl config current-context) --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
 
 kubectl create clusterrolebinding cluster-admin-binding \
     --clusterrole=cluster-admin \
-    --user="$KUBE_USERNAME"
+    --user="$KUBE_USERNAME" > /dev/null 2>&1
 
-kubectl create serviceaccount streamsets-agent --namespace=${KUBE_NAMESPACE}
+kubectl create serviceaccount streamsets-agent --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
 
 kubectl create role streamsets-agent \
     --verb=get,list,create,patch,update,delete \
     --resource=pods,secrets,deployments,services \
-    --namespace=${KUBE_NAMESPACE}
+    --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
+
 kubectl create rolebinding streamsets-agent \
     --role=streamsets-agent \
     --serviceaccount=${KUBE_NAMESPACE}:streamsets-agent \
-    --namespace=${KUBE_NAMESPACE}
+    --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
 
 # Create secret to pull image from docker registry
-eval $(minikube docker-env)
 kubectl create secret docker-registry regcred \
  --docker-server='https://index.docker.io/v1/' \
  --docker-username=${DOCKER_USERNAME} \
  --docker-password=${DOCKER_PASSWORD} \
- --docker-email=${DOCKER_EMAIL}
+ --docker-email=${DOCKER_EMAIL} > /dev/null 2>&1
 
 #######################################################################################
 #
