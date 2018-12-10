@@ -3,6 +3,8 @@
 #  Copyright 2018 StreamSets Inc.
 #
 
+set -x
+
 #######################
 # Setup Control Agent #
 #######################
@@ -33,7 +35,63 @@ kubectl create configmap streamsets-config \
 
 # 4. Launch Agent
 cd ${SCRIPT_DIR}
-kubectl create -f ./control-agent.yaml
+cat << EOF | kubectl create -f -
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: sch-control-agent
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: sch-control-agent
+      annotations:
+        sidecar.istio.io/inject: "false"
+    spec:
+      serviceAccountName: streamsets-agent
+      hostAliases:
+        - ip: "${K8S_IP}"
+          hostnames:
+          - "${DPM_INTERNAL_HOSTNAME}"
+          - "${DPM_HOSTNAME}"
+      containers:
+      - name: sch-control-agent
+        image: streamsets/control-agent:3.7.1
+        env:
+        - name: HOST
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        - name: dpm_agent_master_url
+          value: https://kubernetes.default.svc.cluster.local
+        - name: dpm_agent_cof_type
+          value: "KUBERNETES"
+        - name: dpm_agent_dpm_baseurl
+          valueFrom:
+            configMapKeyRef:
+              name: streamsets-config
+              key: sch_url
+        - name: dpm_agent_component_id
+          valueFrom:
+            configMapKeyRef:
+              name: streamsets-config
+              key: agent_id
+        - name: dpm_agent_token_string
+          valueFrom:
+            secretKeyRef:
+              name: sch-agent-creds
+              key: dpm_agent_token_string
+        - name: dpm_agent_name
+          value: sch-control-agent
+        - name: dpm_agent_orgId
+          valueFrom:
+            configMapKeyRef:
+              name: streamsets-config
+              key: org
+        - name: dpm_agent_secret
+          value: compsecret
+EOF
 
 # 5. wait for agent to be registered with SCH
 temp_agent_Id=""

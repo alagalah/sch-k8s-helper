@@ -212,16 +212,16 @@ fi
 # Eventually Service Discovery will handle this.
 # TODO: Need better way of handling this, but for minikube on PC will suffice
 
-MINIKUBE_IP=$(minikube ip)
+K8S_IP=$(minikube ip)
 
 echo "Adding host entries"
 removehost ${DPM_HOSTNAME}
 removehost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local"
 removehost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local"
 
-addhost ${DPM_HOSTNAME} ${MINIKUBE_IP}
-addhost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
-addhost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local" ${MINIKUBE_IP}
+addhost ${DPM_HOSTNAME} ${K8S_IP}
+addhost "datacollector-deployment.${KUBE_NAMESPACE}.svc.cluster.local" ${K8S_IP}
+addhost "sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local" ${K8S_IP}
 
 
 

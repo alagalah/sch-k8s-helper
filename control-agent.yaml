@@ -7,16 +7,16 @@ spec:
   template:
     metadata:
       labels:
-        app: agent
+        app: sch-control-agent
       annotations:
         sidecar.istio.io/inject: "false"
     spec:
       serviceAccountName: streamsets-agent
       hostAliases:
-      - ip: "127.0.0.1"
-        hostnames:
-        - "foo.local"
-        - "bar.local"
+        - ip: 192.168.64.16
+          hostnames:
+          - "sch-control-hub.default.svc.cluster.local"
+          - "minikube.streamsets.local"
       containers:
       - name: sch-control-agent
         image: streamsets/control-agent:3.7.1
@@ -53,3 +53,4 @@ spec:
               key: org
         - name: dpm_agent_secret
           value: compsecret
+

@@ -24,6 +24,7 @@ if [ ${DEBUG} -ne 0 ]; then
   set -x
 fi
 
+set -x
 
 DPM_ADMIN_USER=${DPM_ADMIN_USER:-admin@admin}
 DPM_ADMIN_PASSWORD=${DPM_ADMIN_PASSWORD:-admin@admin}
@@ -68,7 +69,7 @@ callDPM() {
     -H 'X-Requested-By: SCH UI' \
     --data-binary "$DATA" \
     $REST \
-    "$DPM_URL/$URL_PATH"
+    "$DPM_URL/$URL_PATH" > /dev/null 2>&1
 }
 
 callDPM2() {
@@ -86,7 +87,7 @@ callDPM2() {
     -H 'Accept-Encoding: gzip, deflate' \
     -F "$DATA" \
     $REST \
-    "$DPM_URL/$URL_PATH"
+    "$DPM_URL/$URL_PATH" > /dev/null 2>&1
 }
 
 DPM_URL=${DPM_CONF_DPM_APP_SECURITY_URL:-${DPM_CONF_DPM_BASE_URL}}
@@ -130,6 +131,8 @@ DPM_TOKEN=`curl -X POST \
 
 DPM_URL=${DPM_CONF_DPM_APP_PIPELINESTORE_URL:-${DPM_CONF_DPM_BASE_URL}}
 
+echo "check"
+
 callHealthCheck
 
 echo "Adding pipelines via API"
@@ -148,27 +151,23 @@ callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommit
 #  Services and routing
 #
 #######################################################################################
-# Create service so that references internally to say sch.default.svc.cluster.local point to
-# a DNS entry for "control hub" say streamsets.minikube.local
-#cat <<EOF | kubectl create -f -
-#kind: Service
-#apiVersion: v1
-#metadata:
-#  name: sch-control-hub
-#  namespace: ${KUBE_NAMESPACE}
-#spec:
-#  type: ExternalName
-#  externalName: ${DPM_HOSTNAME}
-#EOF
-
-
+#  cat <<EOF | kubectl create -f -
+##kind: Service
+##apiVersion: v1
+##metadata:
+##  name: sch-control-hub
+##  namespace: ${KUBE_NAMESPACE}
+##spec:
+##  type: ExternalName
+##  externalName: ${DPM_HOSTNAME}
+##EOF
 #######################################################################################
 #
 #  Deploy Control Agent
 #
 #######################################################################################
-#debug_echo "Calling startup-controlagent.sh"
-#. ./startup-controlagent.sh
+debug_echo "Calling startup-controlagent.sh"
+. ./startup-controlagent.sh
 
 #######################################################################################
 #

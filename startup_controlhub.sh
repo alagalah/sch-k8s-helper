@@ -35,17 +35,6 @@ function install_control_hub() {
   helm install --timeout 600 --namespace ${KUBE_NAMESPACE} \
   --name sch --values ${SCRIPT_DIR}/control-hub/sch-minikube.yaml control-hub --wait
 
-  cat <<EOF | kubectl create -f -
-kind: Service
-apiVersion: v1
-metadata:
-  name: sch-control-hub
-  namespace: ${KUBE_NAMESPACE}
-spec:
-  type: ExternalName
-  externalName: ${DPM_HOSTNAME}
-EOF
-
 }
 
 helm status sch > /dev/null 2>&1

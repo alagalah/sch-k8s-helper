@@ -17,7 +17,7 @@ DEBUG=${DEBUG:-0}
 KUBE_NAMESPACE=${KUBE_NAMESPACE:-default}
 KUBE_USERNAME=${KUBE_USERNAME:-minikube}
 
-SCH_VM_DRIVER=${SCH_VM_DRIVER:-hyperkit}
+SCH_VM_DRIVER=${SCH_VM_DRIVER:-virtualbox}
 SCH_VM_RAM=${SCH_VM_RAM:-8192}
 SCH_VM_CPUS=${SCH_VM_CPUS:-4}
 
@@ -30,12 +30,16 @@ SCH_SANDBOX=${SCH_SANDBOX:-0}
 # externalname (outside URL) to this service name, in effect resolving
 # to an outside address that forces the SDC to come from the outside in to the cluster to access SCH.
 # ie svc: sch.default.svc.cluster.local -> maps outside -> streamsets.minikube.local -> maps /etc/hosts -> 192.168.64.8
-DPM_INTERNAL_URL=${DPM_INTERNAL_URL:-"http://sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local:31380"}
+DPM_INTERNAL_HOSTNAME=${DPM_INTERNAL_HOSTNAME:-"http://sch-control-hub.${KUBE_NAMESPACE}.svc.cluster.local"}
+DPM_INTERNAL_URL=${DPM_INTERNAL_URL:-"${DPM_INTERNAL_HOSTNAME}:31380"}
 DPM_CONF_DPM_APP_PROVISIONING_URL=${DPM_CONF_DPM_APP_PROVISIONING_URL:-${DPM_INTERNAL_URL}}
-DPM_CONF_DPM_APP_SECURITY_URL=${DPM_CONF_DPM_APP_PROVISIONING_URL:-${DPM_INTERNAL_URL}}
+DPM_CONF_DPM_APP_SECURITY_URL=${DPM_CONF_DPM_APP_SECURITY_URL:-${DPM_INTERNAL_URL}}
 DPM_CONF_DPM_BASE_URL=${DPM_URL}
 
 START=`date +%s`
+
+echo "Seeding sudo access. Password required later but by doing `sudo ls` now, no password is stored."
+sudo ls > /dev/null 2>&1
 
 echo "Handling base infrastructure"
 TASK=`date +%s`
@@ -45,13 +49,13 @@ debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 echo "Installing Control Hub"
 TASK=`date +%s`
-. ./install_controlhub.sh
+. ./startup_controlhub.sh
 cd ${SCRIPT_DIR}
 debug_echo " took:" $((`date +%s`-TASK)) "s"
 
 echo "Waiting on healthcheck for control hub..."
 TASK=`date +%s`
-source ./util-healthcheck.sh
+. ./util-healthcheck.sh
 cd ${SCRIPT_DIR}
 callHealthCheck # sourced from util-healthcheck.sh
 echo "Healthy."
