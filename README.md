@@ -1,26 +1,6 @@
 Introduction
 ============
 
-The following will help you install StreamSets Control Hub in a k8s
-environment.
-
-The examples have the following dependencies:
-
--   Minikube 0.30+
-
--   Helm 2.10+
-
--   Istio 1.0.4+
-
-The helm-chart provided for StreamSets Control Hub also includes the
-application's database dependencies:
-
--   MySQL
-
--   InfluxDB.
-
-Please note these are used simply in a Proof-Of-Concept fashion. No
-performance tuning, redundancy, backups etc has been considered.
 
 What you will get after following this
 ======================================
@@ -49,12 +29,15 @@ Ability to use browser GUI for control-hub.
 
 Environment setup
 =================
+`bash <(curl -Ls https://raw.githubusercontent.com/alagalah/sch-k8s-helper/master/run.sh)`
+
+or clone repository and run:
 
 `./startup.sh`
 
 Example usage:
 
-`SCH_VM_DRIVER=virtualbox ./startup.sh`
+`SCH_VM_DRIVER=hyperkit ./startup.sh`
 
 Important configuration environment variables:
 
@@ -64,7 +47,7 @@ Important configuration environment variables:
 |DOCKER_EMAIL|-|Y|
 |DOCKER_PASSWORD|-|Y|
 |KUBE_NAMESPACE|default
-|SCH_VM_DRIVER|hyperkit
+|SCH_VM_DRIVER|virtualbox
 |SCH_VM_RAM|8192
 |SCH_VM_CPUS|4
 

@@ -148,6 +148,9 @@ if [ -z "$ROUTE_EXISTS" ]; then
   exit 1
 fi
 
+echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh
+echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_INTERNAL_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh
+
 kubectl create namespace ${KUBE_NAMESPACE} > /dev/null 2>&1
 kubectl config set-context $(kubectl config current-context) --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
 
@@ -189,8 +192,8 @@ function istio_install() {
   cd install/kubernetes/helm/
   kubectl create -f ./helm-service-account.yaml
   helm init --service-account tiller --upgrade
-  sleep 20
-  helm install -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio --wait
+  sleep 60
+  helm install --wait -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio
   kubectl label namespace default istio-injection=enabled
 }
 
