@@ -152,15 +152,15 @@ callDPM2 "POST" ${DPM_URL} "pipelinestore/rest/v1/pipelines/importPipelineCommit
 #
 #######################################################################################
 #  cat <<EOF | kubectl create -f -
-##kind: Service
-##apiVersion: v1
-##metadata:
-##  name: sch-control-hub
-##  namespace: ${KUBE_NAMESPACE}
-##spec:
-##  type: ExternalName
-##  externalName: ${DPM_HOSTNAME}
-##EOF
+#kind: Service
+#apiVersion: v1
+#metadata:
+#  name: sch-control-hub
+#  namespace: ${KUBE_NAMESPACE}
+#spec:
+#  type: ExternalName
+#  externalName: ${DPM_HOSTNAME}
+#EOF
 #######################################################################################
 #
 #  Deploy Control Agent

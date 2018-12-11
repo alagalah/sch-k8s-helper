@@ -1,0 +1,53 @@
+apiVersion: v1
+kind: List
+items:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: datacollector-deployment
+    namespace: default
+    labels:
+      app: datacollector-deployment
+  spec:
+    type: NodePort
+    ports:
+    - name: http
+      port: 18630
+      targetPort: 18630
+      nodePort: 30001
+      protocol: TCP
+    selector:
+      app: datacollector-deployment
+- apiVersion: extensions/v1beta1
+  kind: Deployment
+  metadata:
+    name: datacollector-deployment
+    namespace: default
+  spec:
+    replicas: 1
+    template:
+      metadata:
+        labels:
+          app : datacollector-deployment
+        annotations:
+          sidecar.istio.io/inject: "false"
+      spec:
+        hostAliases:
+          - ip: 192.168.64.18
+            hostnames:
+              - sch-control-hub
+              - sch-control-hub.default.svc.cluster.local
+        containers:
+        - name : datacollector
+          image: streamsets/datacollector:3.7.0-latest
+          ports:
+          - containerPort: 18360
+          env:
+          - name: HOST
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: PORT0
+            value: "18630"
+          - name: SDC_CONF_SDC_BASE_HTTP_URL
+            value: http://datacollector-deployment.default.svc.cluster.local:30001
