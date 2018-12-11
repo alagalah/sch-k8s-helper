@@ -22,8 +22,6 @@ cd ${SCRIPT_DIR}
 debug_echo "Installing Control Hub at ${SCRIPT_DIR}"\
 
 function install_control_hub() {
-  debug_echo "Pulling docker image for control hub"
-  docker pull streamsets/control-hub:${SCH_VER} > /dev/null 2>&1
   debug_echo "Cloning helm-charts"
   git clone https://github.com/streamsets/helm-charts.git > /dev/null 2>&1
   cd helm-charts
