@@ -38,14 +38,20 @@ DPM_CONF_DPM_BASE_URL=${DPM_URL}
 
 START=`date +%s`
 
-echo "Seeding sudo access. Password required later but by doing `sudo ls` now, no password is stored."
+echo "Seeding sudo access. Password required later but by doing \"sudo ls\" now, no password is stored."
 sudo ls > /dev/null 2>&1
+
+# Sourcing utility scripts with helper functions
+. ./util-healthcheck.sh
+. ./util-podcount.sh
 
 echo "Handling base infrastructure"
 TASK=`date +%s`
 . ./startup-infrastructure.sh
 cd ${SCRIPT_DIR}
 debug_echo " took:" $((`date +%s`-TASK)) "s"
+
+exit 0
 
 echo "Installing Control Hub"
 TASK=`date +%s`

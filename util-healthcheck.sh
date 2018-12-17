@@ -14,3 +14,4 @@ function callHealthCheck() {
     HEALTH_CHECK=${HEALTH_CHECK:-dead}
   done
 }
+

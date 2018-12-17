@@ -1,7 +1,7 @@
 ---
 grafana:
-  enabled: true
+  enabled: false
 tracing:
-  enabled: true
+  enabled: false
 kiali:
-  enabled: true
+  enabled: false

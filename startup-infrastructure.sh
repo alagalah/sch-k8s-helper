@@ -45,8 +45,13 @@ function validate_command() {
 }
 
 function start_minikube() {
-  minikube start --vm-driver=${SCH_VM_DRIVER} --memory=${SCH_VM_RAM} --cpus=${SCH_VM_CPUS}
-  sleep 60 # Can't find a suitable and reliable "health check" for k8s itself etc.
+  echo "Starting minikube"
+  minikube start --vm-driver=${SCH_VM_DRIVER} --memory=${SCH_VM_RAM} \--cpus=${SCH_VM_CPUS} > /dev/null 2>&1
+
+  # Expect to see 13 pods in Running state in namespace kube-system before moving on.
+  waitForPodCount "Running" "kube-system" 13
+  waitForPodReady "kube-system"
+  echo "Minikube started successfully."
 }
 
 function debug_echo() {
@@ -122,14 +127,12 @@ validate_command "jq" $INSTALL_JQ
 #
 ##################
 
-
-
 # Check minikube status
 debug_echo "Checking minikube status"
 minikube status > /dev/null 2>&1
 RC_MINIKUBE=$?
 if [ ${RC_MINIKUBE} -ne 0 ]; then
-  echo "Error: minikube is not running."
+  echo "Warning: minikube is not running."
   start_minikube
 fi
 
@@ -148,8 +151,8 @@ if [ -z "$ROUTE_EXISTS" ]; then
   exit 1
 fi
 
-echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh
-echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_INTERNAL_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh
+echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh > /dev/null 2>&1
+echo "sudo -- sh -c -e \"echo '127.0.1.1 ${DPM_INTERNAL_HOSTNAME}' >> /etc/hosts\"; exit " | minikube ssh > /dev/null 2>&1
 
 kubectl create namespace ${KUBE_NAMESPACE} > /dev/null 2>&1
 kubectl config set-context $(kubectl config current-context) --namespace=${KUBE_NAMESPACE} > /dev/null 2>&1
@@ -184,26 +187,31 @@ kubectl create secret docker-registry regcred \
 #
 #######################################################################################
 
-function istio_install() {
-  echo "Installing Istio."
-  cd ${SCRIPT_DIR}
-  curl -L https://git.io/getLatestIstio | sh - > /dev/null 2>&1
-  cd `find . -name "istio-1.*" -type d`
-  cd install/kubernetes/helm/
-  kubectl create -f ./helm-service-account.yaml
-  helm init --service-account tiller --upgrade
-  sleep 60
-  helm install --wait -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system ./istio
-  kubectl label namespace default istio-injection=enabled
-}
+minikube addons enable ingress
 
-helm status istio > /dev/null 2>&1
-ISTIO_RC=$?
-if [ $ISTIO_RC -eq 0 ]; then
-  echo "Istio already installed, using installation."
-else
-  istio_install
-fi
+#function istio_install() {
+#  cd ${SCRIPT_DIR}
+#  #If it exists, use it, if it doesn't, get it and use it.
+#  ls istio-1.* > /dev/null 2>&1 || curl -sL https://git.io/getLatestIstio | sh - > /dev/null 2>&1 &&   cd `find . -name "istio-1.*" -type d`
+#  kubectl apply -f install/kubernetes/helm/helm-service-account.yaml
+#  helm init --service-account tiller
+#  echo "Waiting for tiller..."
+#  waitForPodCount "Running" "kube-system" 14
+#  waitForPodReady "kube-system"
+#  echo "Installing Istio"
+#  helm install --wait -n istio -f ${SCRIPT_DIR}/control-hub/istio-values.yaml --namespace=istio-system install/kubernetes/helm/istio
+#
+#  kubectl label namespace default istio-injection=enabled
+#}
+#
+#echo "Checking Istio."
+#helm status istio > /dev/null 2>&1
+#ISTIO_RC=$?
+#if [ $ISTIO_RC -eq 0 ]; then
+#  echo "Istio already installed, using installation."
+#else
+#  istio_install
+#fi
 
 
 ##############
