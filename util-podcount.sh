@@ -51,7 +51,7 @@ function waitForPodCount() {
   PODCOUNT=$(podStatusCount ${STATUS} ${NAMESPACE})
   echo "${PODCOUNT}/${EXPECTED_COUNT} pods with ${STATUS} in ${NAMESPACE}"
   DEADMAN=0
-  until [[ ${PODCOUNT} -eq ${EXPECTED_COUNT} ]]; do
+  until [[ ${PODCOUNT} -ge ${EXPECTED_COUNT} ]]; do
     sleep 30
     DEADMAN=$((DEADMAN+1))
     PODCOUNT=$(podStatusCount ${STATUS} ${NAMESPACE})
@@ -72,7 +72,7 @@ function waitForPodReady() {
   EXPECTED_COUNT=1 #header
   echo "$((PODCOUNT-EXPECTED_COUNT)) pods not ready in ${NAMESPACE}"
   DEADMAN=0
-  until [[ ${PODCOUNT} -eq ${EXPECTED_COUNT} ]]; do
+  until [[ ${PODCOUNT} -ge ${EXPECTED_COUNT} ]]; do
     sleep 10
     DEADMAN=$((DEADMAN+1))
     PODCOUNT=$(podStatusCount ${STATUS} ${NAMESPACE})

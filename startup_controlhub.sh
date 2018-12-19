@@ -33,6 +33,7 @@ function install_control_hub() {
   helm install --timeout 600 --namespace ${KUBE_NAMESPACE} \
   --name sch --values ${SCRIPT_DIR}/control-hub/sch-minikube.yaml control-hub --wait
 
+  waitForPodReady ${KUBE_NAMESPACE}
 }
 
 helm status sch > /dev/null 2>&1

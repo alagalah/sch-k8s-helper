@@ -49,7 +49,7 @@ function start_minikube() {
   minikube start --vm-driver=${SCH_VM_DRIVER} --memory=${SCH_VM_RAM} \--cpus=${SCH_VM_CPUS} > /dev/null 2>&1
 
   # Expect to see 13 pods in Running state in namespace kube-system before moving on.
-  waitForPodCount "Running" "kube-system" 13
+  waitForPodCount "Running" "kube-system" 11
   waitForPodReady "kube-system"
   echo "Minikube started successfully."
 }
@@ -188,6 +188,8 @@ kubectl create secret docker-registry regcred \
 #######################################################################################
 
 minikube addons enable ingress
+helm init
+waitForPodReady "kube-system"
 
 #function istio_install() {
 #  cd ${SCRIPT_DIR}
