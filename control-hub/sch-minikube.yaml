@@ -4,14 +4,14 @@ image:
   tag: 3.7.0
   pullSecret: regcred
 ingress:
-  enabled: false
+  enabled: true
   proto: http
   # Used to create an Ingress record.
   domain: minikube.local
   host: streamsets
   annotations:
 istio:
-  enabled: true
+  enabled: false
   mTLS: PERMISSIVE
 
 adminPassword: streamSets123

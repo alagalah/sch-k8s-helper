@@ -51,7 +51,6 @@ TASK=`date +%s`
 cd ${SCRIPT_DIR}
 debug_echo " took:" $((`date +%s`-TASK)) "s"
 
-exit 0
 echo "Installing Control Hub"
 TASK=`date +%s`
 . ./startup_controlhub.sh

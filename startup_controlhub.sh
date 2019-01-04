@@ -25,7 +25,7 @@ function install_control_hub() {
   debug_echo "Cloning helm-charts"
   git clone https://github.com/streamsets/helm-charts.git > /dev/null 2>&1
   cd helm-charts
-  echo "Installing control-hub. Follow progress: "
+  echo "Follow progress: "
   echo ""
   echo "watch -n1 -d \"kubectl get job,pod,svc -n ${KUBE_NAMESPACE}\" "
   echo ""
